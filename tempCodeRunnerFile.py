@@ -1,5 +1,3 @@
- i in range(n/5):
-#     pgui.moveTo(1205,1049)
-#     pgui.click()
-#     pgui.write('ohunt\n')
-#     time.sleep(46)
+n = 0
+if (n != -1 and n!= -5):
+    print("hello")
