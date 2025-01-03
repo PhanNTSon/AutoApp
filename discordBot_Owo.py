@@ -10,43 +10,44 @@ prevTimeVar = -20
 timeVar = 0
 
 actionsQueue = QueueArray(size=3)
-def A(timeVar):
+def A(x):
     pgui.write("opray\n")
     time.sleep(3)
-    timeVar += 3
-    return timeVar
+    x += 3
+    return x
 
-def B(timeVar):
-    pgui.write("ohunt\n")
+def B(x):
+    pgui.write(f"ohunt{x+3}\n")
     time.sleep(3)
-    timeVar += 3
-    return timeVar
+    x += 3
+    return x
 
 
-def C(timeVar):
-    pgui.write("ozoo\n")
-    time.sleep(5)
-    timeVar += 5
-    return timeVar
+def C(x):
+    pgui.write(f"ocash{x+7}\n")
+    time.sleep(7)
+    x += 7
+    return x
 
-def D(timeVar):
-    pgui.write("ohb\n")
-    time.sleep(5)
-    timeVar += 5
-    return timeVar
+def D(x):
+    pgui.write(f"ohb{x+7}\n")
+    time.sleep(7)
+    x += 7
+    return x
 
-def E(timeVar):
+def E(x):
+    pgui.write(f"sleep :)){x+10}\n")
     time.sleep(10)
-    timeVar += 10
-    return timeVar
+    x += 10
+    return x
 
-def F(timeVar):
-    pgui.write("ohelp\n")
-    time.sleep(5)
-    timeVar += 5
-    return timeVar
+def F(x):
+    pgui.write(f"ohelp{x+7}\n")
+    time.sleep(7)
+    x += 7
+    return x
 
-def PerformQueue(timeVar):
+def PerformQueue(x):
     rand = Random()
     actions = [C, D, E, F]
 
@@ -58,20 +59,23 @@ def PerformQueue(timeVar):
 
     while (actionsQueue.isEmpty() is False):
         act = actionsQueue.deQueue()
-        timeVar += act(timeVar)
+        x = act(x)
 
-    return timeVar
+    return x
     
 
 for i in range(10):
 
     if (timeVar == 0):
-        timeVar += A(timeVar)
+        timeVar = A(timeVar)
     elif (timeVar - prevTimeVar >= 20):
-        timeVar += B(timeVar)
+        timeVar = B(timeVar)
+
         prevTimeVar = timeVar
     elif (timeVar >= 300):
         prevTimeVar = 0 - timeVar + 300
         timeVar = 0
     else:
-        timeVar += PerformQueue(timeVar)
+        timeVar = PerformQueue(timeVar)
+
+    print(timeVar)
