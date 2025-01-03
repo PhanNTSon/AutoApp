@@ -12,39 +12,68 @@ timeVar = 0
 actionsQueue = QueueArray(size=3)
 def A(x):
     pgui.write("opray\n")
-    time.sleep(3)
-    x += 3
+    time.sleep(5)
+    x += 5
     return x
 
 def B(x):
-    pgui.write(f"ohunt{x+3}\n")
-    time.sleep(3)
-    x += 3
+    pgui.write("ohunt\n")
+    time.sleep(5)
+    x += 5
     return x
 
 
 def C(x):
-    pgui.write(f"ocash{x+7}\n")
+    pgui.write("ocash\n")
     time.sleep(7)
     x += 7
     return x
 
 def D(x):
-    pgui.write(f"ohb{x+7}\n")
-    time.sleep(7)
-    x += 7
+    """
+    Play coinflip with 100 cash
+    """
+    pgui.write("ocoinflip 100\n")
+    time.sleep(8)
+    x += 8
     return x
 
 def E(x):
-    pgui.write(f"sleep :)){x+10}\n")
+    """
+    Send a random String
+    """
+
+    collectString = [
+        "sleep :))\n",
+        "bruh\n",
+        "3tocom\n",
+        "朝\n",
+        "夜\n",
+        "昼\n",
+    ]
+
+    seed = Random()
+
+    pgui.write(f"{collectString[seed.randint(0,5)]}\n")
     time.sleep(10)
     x += 10
     return x
 
 def F(x):
-    pgui.write(f"ohelp{x+7}\n")
-    time.sleep(7)
-    x += 7
+    """
+    Play slots with 100 cash
+    """
+    pgui.write("oslots 100\n")
+    time.sleep(8)
+    x += 8
+    return x
+
+def G(x):
+    """
+    Actual sleep for not invoke bot detect
+    """
+    time.sleep(45)
+    x+=45
     return x
 
 def PerformQueue(x):
@@ -52,7 +81,12 @@ def PerformQueue(x):
     actions = [C, D, E, F]
 
     while (actionsQueue.isFull() is False):
-        action = actions[rand.randint(0,3)]
+
+        ind = rand.randint(0,3)
+        action = actions[ind]
+
+        if ind is 2:
+            actionsQueue.enQueue(action)
 
         if (actionsQueue.isContains(action) is False):
             actionsQueue.enQueue(action)
@@ -62,9 +96,12 @@ def PerformQueue(x):
         x = act(x)
 
     return x
-    
 
-for i in range(10):
+loopNum = 0    
+
+while True:
+
+    loopNum +=1
 
     if (timeVar == 0):
         timeVar = A(timeVar)
@@ -78,4 +115,5 @@ for i in range(10):
     else:
         timeVar = PerformQueue(timeVar)
 
-    print(timeVar)
+    if (loopNum == 100):
+        timeVar = G(timeVar)
