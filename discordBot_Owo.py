@@ -66,12 +66,12 @@ def PerformQueue(timeVar):
 for i in range(10):
 
     if (timeVar == 0):
-        timeVar = A(timeVar)
+        timeVar += A(timeVar)
     elif (timeVar - prevTimeVar >= 20):
-        timeVar = B(timeVar)
+        timeVar += B(timeVar)
         prevTimeVar = timeVar
     elif (timeVar >= 300):
         prevTimeVar = 0 - timeVar + 300
         timeVar = 0
     else:
-        timeVar = PerformQueue(timeVar)
+        timeVar += PerformQueue(timeVar)
