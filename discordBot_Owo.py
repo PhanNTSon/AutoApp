@@ -17,83 +17,11 @@ from QueueArray import QueueArray
 from random import Random
 from constants import *
 
+BASE_COINFLIP = 100
+BASE_SLOTS = 100
+
 pygame.init()
 pygame.mixer.init()
-
-# Init a window
-window_width = 1000
-window_height = 500
-window = pygame.display.set_mode((window_width,window_height))
-
-# Fonts
-Times_new_roman_font = pygame.font.SysFont("Times New Roman", round(window_width/40))
-
-class Button():
-    def __init__(self, x, y, width, height, text):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.text = text
-        self.font = Times_new_roman_font
-
-    def drawText(self, surface, text_color):
-        """
-        Draw only text on screen where the button located
-
-        Param:
-            surface (): The surface where it will be displayed.
-            text_color (RGB color in set() defined): Color of text
-        """
-        text_surface = self.font.render(self.text, True, text_color)
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        surface.blit(text_surface,text_rect)
-
-    def draw(self, surface, bg_color,  border_color, border_radius, border_width, text_color):
-        """
-        Draw both the Button and Text inside it
-        Param:
-            surface ():
-            bg_color (): Background color
-        """
-        pygame.draw.rect(surface, bg_color, self.rect, 0, border_radius)
-
-        if (border_width != 0):
-            pygame.draw.rect(surface, border_color, self.rect, border_width, border_radius)
-        
-        self.drawText(surface, text_color)
-
-# Setup buttons and stuffs
-start_button = Button((window_width/2)*0.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8, "START")
-stop_button = Button((window_width/2)*1.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8, "STOP")
-
-
-# Init FPS
-clock = pygame.time.Clock()
-FPS = 60
-
-running = True
-while running:
-    # Setup FPS for window
-    clock.tick(FPS)
-
-    # Process event 
-    for event in pygame.event.get():
-        if (event.type == pygame.QUIT):
-            running = False
-
-    # Background colors
-    window.fill(WHITE)
-
-    # Draw button 
-   
-    start_button.draw(window,GREEN, BLACK, 20, 5, text_color= WHITE)
-    stop_button.draw(window,RED, BLACK, 20, 5, text_color= WHITE)
-
-    # Update window frame by switching frame between Buffer and On-screen
-    pygame.display.flip()
-
-
-# Quit
-pygame.mixer.stop()
-pygame.quit()
 
 def playNotification():
     """
@@ -150,12 +78,26 @@ def isTemplateExisted(templateSrc):
 
 actionsQueue = QueueArray(size=3)
 def Pray(x):
+    """
+    Write opray\n and sleep 5s
+    Param:
+        x (int): timeVar
+    Return: 
+        x (int): timeVar
+    """
     pgui.write("opray\n")
     time.sleep(5)
     x += 5
     return x
 
 def Hunt(x):
+    """
+    Write ohunt\n and sleep 5s
+    Param:
+        x (int): timeVar
+    Return: 
+        x (int): timeVar
+    """
     pgui.write("ohunt\n")
     time.sleep(5)
     x += 5
@@ -163,28 +105,43 @@ def Hunt(x):
 
 
 def Cash(x):
+    """
+    Write ocash\n and sleep 7s
+    Param:
+        x (int): timeVar
+    Return: 
+        x (int): timeVar
+    """
     pgui.write("ocash\n")
     time.sleep(7)
     x += 7
     return x
 
-def Coinflip(x, ammount):
+def Coinflip(x, amount):
     """
-    Play coinflip with an ammount of cash and sleep 8s.
+    Play coinflip with an amount of cash and sleep 8s.
     Param:
         x (int): timeVar
-        ammount (int): ammount of cash to bet
+        amount (int): amount of cash to bet
     Return:
         x (int): timeVar after sleep 
     """
-    pgui.write(f"ocoinflip {ammount}\n")
+    pgui.write(f"ocoinflip {amount}\n")
     time.sleep(8)
     x += 8
-    return x
+    if (isTemplateExisted(winCoinFlipTemplate)[0]):
+        amount = BASE_COINFLIP
+    else: 
+        amount *= 2
+    return x, amount
 
 def RandomString(x):
     """
     Send a random String and sleep 10s.
+    Param:
+        x (int): timeVar
+    Return:
+        x (int): timeVar after sleep 
     """
 
     collectString = [
@@ -203,18 +160,27 @@ def RandomString(x):
     x += 10
     return x
 
-def SLots(x, ammount):
+def Slots(x):
     """
-    Play slots with 100 cash
+    Play slots with an amount of cash and sleep 8s
+    Param:
+        x (int): timeVar
+        amount (int): amount of cash to bet
+    Return:
+        x (int): timeVar after sleep
     """
-    pgui.write("oslots 1000\n")
+    pgui.write("oslots 100\n")
     time.sleep(8)
     x += 8
     return x
 
 def DeepSleep(x):
     """
-    Actual sleep for not invoke bot detect
+    Deep sleep for not invoke bot detect, sleep 45s
+    Param:
+        x (int): timeVar
+    Return:
+        x (int): timeVar after sleep 
     """
     time.sleep(45)
     x+=45
@@ -229,9 +195,9 @@ def Battle(x):
     x += 10
     return x
 
-def PerformQueue(x):
+def PerformQueue(x, coinFlipAmount):
     rand = Random()
-    actions = [C, D, E, F, H]
+    actions = [Cash, Coinflip, RandomString, Slots, Battle]
 
     while (actionsQueue.isFull() is False):
 
@@ -246,9 +212,13 @@ def PerformQueue(x):
 
     while (actionsQueue.isEmpty() is False):
         act = actionsQueue.deQueue()
-        x = act(x)
 
-    return x
+        if callable(act) and act.__name__=="Coinflip":
+            x, coinFlipAmount = act(x,coinFlipAmount)
+        else:
+            x = act(x)
+
+    return x, coinFlipAmount
 
 def startProcess():
     """
@@ -258,17 +228,132 @@ def startProcess():
     prevTimeVar = -20
     timeVar = 0
 
+    coinFlipNum = 100
+
+    r1 = isTemplateExisted(discordIconTemplate)
     # If not find Discord icon on screen then play notification and quit function
+    if r1[0] is False:
+        playNotification()
+        return -1
 
     # Else click into it
-
+    else:
+        pgui.click(r1[1],r1[2])
     
-    # If timeVar is 0 then Pray
+    loopNum = 0
 
-    # Else if already pass 20s then Hunt
+    while True:
+        loopNum += 1
 
-    # Else if timeVar is larger than 300s (5min) then reset timeVar and prevTimeVar
+        # If timeVar is 0 then Pray
+        if timeVar == 0:
+            timeVar = Pray(timeVar)
 
-    # Else perform random actions
+        # Else if already pass 20s then Hunt
+        elif (timeVar - prevTimeVar) == 20:
+            prevTimeVar = timeVar
+            timeVar = Hunt(timeVar)
 
-    # If found VerifyTemplate then play notification and quit function
+        # Else if timeVar is larger than 300s (5min) then reset timeVar and prevTimeVar
+        elif timeVar >= 300:
+            prevTimeVar = 0 - timeVar + prevTimeVar
+            timeVar = 0
+
+        # Else perform random actions
+        else:
+            timeVar = PerformQueue(timeVar,coinFlipAmount=coinFlipNum)
+
+        # If found VerifyTemplate then play notification and quit function
+        r2 = isTemplateExisted(verifyTemplate)
+        if r2[0]:
+            playNotification()
+            return -2
+
+        if loopNum == 100:
+            timeVar = DeepSleep(timeVar)
+
+# Init a window
+window_width = 1000
+window_height = 500
+window = pygame.display.set_mode((window_width,window_height))
+
+# Fonts
+Times_new_roman_font = pygame.font.SysFont("Times New Roman", round(window_width/40))
+
+class Button():
+    def __init__(self, x, y, width, height, text):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.font = Times_new_roman_font
+
+    def drawText(self, surface, text_color):
+        """
+        Draw only text on screen where the button located
+
+        Param:
+            surface (): The surface where it will be displayed.
+            text_color (RGB color in set() defined): Color of text
+        """
+        text_surface = self.font.render(self.text, True, text_color)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface,text_rect)
+
+    def draw(self, surface, bg_color,  border_color, border_radius, border_width, text_color):
+        """
+        Draw both the Button and Text inside it
+        Param:
+            surface ():
+            bg_color (): Background color
+        """
+        pygame.draw.rect(surface, bg_color, self.rect, 0, border_radius)
+
+        if (border_width != 0):
+            pygame.draw.rect(surface, border_color, self.rect, border_width, border_radius)
+        
+        self.drawText(surface, text_color)
+
+# Setup buttons and stuffs
+start_button = Button((window_width/2)*0.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8, "START")
+stop_button = Button((window_width/2)*1.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8, "STOP")
+quit_button = Button((window_width/2)*1.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8, "STOP")
+
+# Init FPS
+clock = pygame.time.Clock()
+FPS = 60
+
+startProcessState = False
+
+running = True
+while running:
+    # Process event 
+    for event in pygame.event.get():
+        if (event.type == pygame.QUIT):
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            if (start_button.rect.collidepoint(pos)):
+                startProcess()
+            elif (quit_button.rect.collidepoint(pos)):
+                running = False
+
+    # Background colors
+    window.fill(WHITE)
+
+    # Draw button 
+    start_button.draw(window,GREEN, BLACK, 20, 5, text_color= WHITE)
+    if (startProcessState):
+        stop_button.draw(window,RED, BLACK, 20, 5, text_color= WHITE)
+    else:
+        quit_button.draw(window,LIGHT_BLUE, BLACK, 20, 5, text_color= BLACK)
+    
+    
+    
+    # Update window frame by switching frame between Buffer and On-screen
+    pygame.display.flip()
+    # Setup FPS for window
+    clock.tick(FPS)
+
+
+# Quit
+pygame.mixer.stop()
+pygame.quit()
