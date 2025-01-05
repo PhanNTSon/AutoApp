@@ -15,18 +15,23 @@ pyautogui
 
 from QueueArray import QueueArray 
 from random import Random
+from constants import *
 
+pygame.init()
 pygame.mixer.init()
 
-discordIconTemplate = r"F:\PythonProject\AutoApp\images\discordIcon_template.png"
+class Button():
+    def __init__(self, x, y, width, height, text):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
 
-winCoinFlipTemplate = r"F:\PythonProject\AutoApp\images\winCoinFlip_template.png"
-lostCoinFlipTemplate = r"F:\PythonProject\AutoApp\images\lostCoinFlip_template.png"
-verifyTemplate = r"F:\PythonProject\AutoApp\images\verify_template.png"
+    def draw(self, surface, bg_color,  border_color, border_radius, border_width):
+        pygame.draw.rect(surface, bg_color, self.rect, 0, border_radius)
 
+        if (border_width != 0):
+            pygame.draw.rect(surface, border_color, self.rect, border_width, border_radius)
 
-# pgui.moveTo(1250,1049)
-# pgui.click()
+                    
 
 def playNotification():
     """
@@ -80,9 +85,6 @@ def isTemplateExisted(templateSrc):
                 None,
                 None
                 ]
-
-    
-
 
 actionsQueue = QueueArray(size=3)
 def A(x):
@@ -181,17 +183,48 @@ def PerformQueue(x):
 
     return x
 
+# Init a window
+window_width = 1000
+window_height = 500
+window = pygame.display.set_mode((window_width,window_height))
 
 
-r1 = isTemplateExisted(discordIconTemplate)
-print(r1)
-if (r1[0] is True):
-    pgui.click(r1[1],r1[2])
+# Init FPS
+clock = pygame.time.Clock()
+FPS = 60
 
-    time.sleep(2)
 
-    r = isTemplateExisted(verifyTemplate)
+running = True
+while running:
+    # Setup FPS for window
+    clock.tick(FPS)
 
-    print(r)
-else:
-    playNotification()
+    # Process event 
+    for event in pygame.event.get():
+        if (event.type == pygame.QUIT):
+            running = False
+
+    # Background colors
+    window.fill(WHITE)
+
+    # Draw button 
+    # pygame.draw.rect( window, GREEN, 
+    #                 ( (window_width/2)*0.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8,), 
+    #                 0, 15)
+
+    # pygame.draw.rect( window, RED, 
+    #                 ( (window_width/2)*1.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8,), 
+    #                 0, 15)
+    start_button = Button((window_width/2)*0.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8, "")
+    stop_button = Button((window_width/2)*1.1, (window_height/3), (window_width/2)*0.8, (window_height/3)*0.8, "")
+
+    start_button.draw(window,GREEN, BLACK, 20, 5)
+    stop_button.draw(window,RED, BLACK, 20, 5)
+
+    # Update window frame by switching frame between Buffer and On-screen
+    pygame.display.flip()
+
+
+# Quit
+pygame.mixer.stop()
+pygame.quit()
